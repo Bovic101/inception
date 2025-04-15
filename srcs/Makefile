@@ -32,7 +32,7 @@ clean: down
 # Target to completely clean the configurations (stop all containers, prune all resources)
 fclean:
 	@printf "Performing a full cleanup of all Docker configurations...\n"
-	@docker stop $$(docker ps -qa)
+	@docker stop $$(docker ps -qa) || true
 	@docker system prune --all --force --volumes
 	@docker network prune --force
 	@docker volume prune --force
