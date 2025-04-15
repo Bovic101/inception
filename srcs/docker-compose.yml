@@ -3,23 +3,25 @@ version: '3'
 services:
   nginx:
     build:
-      context: .
-      dockerfile: requirements/nginx/Dockerfile
-    container_name: nginx
-#    depends_on:
-#      - wordpress
+      context: .  # Root context for building Docker image
+      dockerfile: requirements/nginx/Dockerfile  # Dockerfile path for nginx
+    container_name: nginx  # Name of the nginx container
+    depends_on:
+      - wordpress  # nginx will wait for wordpress to be ready
     ports:
-      - "443:443"
+      - "443:443"  # Expose HTTPS port
+    networks:
+      - network_inception  # Connect to custom bridge network
     volumes:
-      - ./requirements/nginx/conf/:/etc/nginx/http.d/
-      - ./requirements/nginx/tools:/etc/nginx/ssl/
-      - /home/${USER}/simple_docker_nginx_html/public/html:/var/www/
-    restart: always
+      - ./requirements/nginx/conf/:/etc/nginx/http.d/  # Nginx config files
+      - ./requirements/nginx/tools:/etc/nginx/ssl/  # SSL certificate files
+      - wp-volume:/var/www/  # Share WordPress files
+    restart: always  # Automatically restart the container on failure or reboot
 
   mariadb:
     build:
       context: .
-      dockerfile: requirements/mariadb/Dockerfile
+      dockerfile: requirements/mariadb/Dockerfile  # Dockerfile path for MariaDB
       args:
         DB_NAME: ${DB_NAME}
         DB_USER: ${DB_USER}
@@ -27,12 +29,51 @@ services:
         DB_ROOT: ${DB_ROOT}
     container_name: mariadb
     ports:
-      - "3306:3306"
+      - "3306:3306"  # Expose MySQL port
+    networks:
+      - network_inception  # Connect to custom bridge network
     volumes:
-      - db-volume:/var/lib/mysql
+      - db-volume:/var/lib/mysql  # Persist MySQL data
     restart: always
 
-# Declare the named volume 'db-volume' for persistent MariaDB data
+  wordpress:
+    build:
+      context: .
+      dockerfile: requirements/wordpress/Dockerfile 
+      args:
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PASS: ${DB_PASS}
+    container_name: wordpress  # Name of the WordPress container
+    depends_on:
+      - mariadb  # Wait for MariaDB to start first
+    restart: always 
+    networks:
+      - network_inception 
+    volumes:
+      - wp-volume:/var/www/  # WordPress files location
+
+# Volumes for persisting WordPress and DB data
+# NOTE:  run `docker volume rm db-volume wp-volume` if you:
+#   1. Change the driver_opts or device path
+#   2. Want to reset all your data
 volumes:
+  wp-volume:
+    name: wp-volume  # Explicitly naming the volume to avoid auto-prefix
+    driver_opts:
+      o: bind  # Use bind mount
+      type: none
+      device: /home/${USER}/data/wordpress  # Host directory for WordPress data
+
   db-volume:
-    driver: local
+    name: db-volume  # Explicitly naming the volume to avoid auto-prefix
+    driver_opts:
+      o: bind  # Use bind mount
+      type: none
+      device: /home/${USER}/data/mariadb  # Host directory for MariaDB data
+
+# Custom bridge network to allow inter-container communication
+networks:
+  network_inception:
+    name: network_inception
+    driver: bridge

@@ -1,4 +1,4 @@
-FROM alpine:3.21
+FROM alpine:3.16
 
 # Arguments for database credentials
 ARG DB_NAME
