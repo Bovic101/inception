@@ -25,11 +25,11 @@ RUN apk update && apk upgrade && apk add --no-cache \
     unzip && \                               # unzip utility for extracting files
     # Modify PHP-FPM configuration to listen on all interfaces and set correct owner/group
     sed -i "s|listen = 127.0.0.1:9000|listen = 9000|g" \
-      /etc/php8/php-fpm.d/www.conf && \
+      /etc/php${PHP_VERSION}/php-fpm.d/www.conf && \
     sed -i "s|;listen.owner = nobody|listen.owner = nobody|g" \
-      /etc/php8/php-fpm.d/www.conf && \
+      /etc/php${PHP_VERSION}/php-fpm.d/www.conf && \
     sed -i "s|;listen.group = nobody|listen.group = nobody|g" \
-      /etc/php8/php-fpm.d/www.conf && \
+      /etc/php${PHP_VERSION}/php-fpm.d/www.conf && \
     # Clean up the APK cache to reduce the image size
     rm -f /var/cache/apk/*
 
@@ -50,4 +50,4 @@ RUN sh wp-config-create.sh && rm wp-config-create.sh && \
     chmod -R 0777 wp-content/          # Give write permissions to wp-content
 
 # Start PHP-FPM service in the foreground
-CMD ["/usr/sbin/php-fpm8", "-F"]
+CMD ["/usr/sbin/php-fpm${PHP_VERSION}", "-F"]
