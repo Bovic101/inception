@@ -30,9 +30,14 @@ RUN apk update && apk upgrade && apk add --no-cache \
       /etc/php${PHP_VERSION}/php-fpm.d/www.conf && \
     sed -i "s|;listen.group = nobody|listen.group = nobody|g" \
 <<<<<<< HEAD
+<<<<<<< HEAD
       /etc/php${PHP_VERSION}/php-fpm.d/www.conf && \
     # Clean up the APK cache to reduce the image size
     rm -f /var/cache/apk/*
+=======
+      /etc/php8/php-fpm.d/www.conf && \
+    rm -f /var/cache/apk/*                           # Clean up package cache
+>>>>>>> parent of 71c3133 (Configuration of the dockerfile for the wordpress and rediting of the dockerposefile)
 =======
       /etc/php8/php-fpm.d/www.conf && \
     rm -f /var/cache/apk/*                           # Clean up package cache
@@ -53,9 +58,12 @@ RUN sh wp-config-create.sh && rm wp-config-create.sh && \
     chmod -R 0777 wp-content/                        # Make wp-content fully writable (less secure, useful in dev)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Start PHP-FPM service in the foreground
 CMD ["/usr/sbin/php-fpm${PHP_VERSION}", "-F"]
 =======
+=======
+>>>>>>> parent of 71c3133 (Configuration of the dockerfile for the wordpress and rediting of the dockerposefile)
 # Start PHP-FPM in foreground mode when container runs
 CMD ["/usr/sbin/php-fpm8", "-F"]
 >>>>>>> parent of 71c3133 (Configuration of the dockerfile for the wordpress and rediting of the dockerposefile)
